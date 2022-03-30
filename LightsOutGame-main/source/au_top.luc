@@ -7,7 +7,7 @@ module au_top (
     output led_strip[4],
     input button[16],
     input reset_button[1] // need to configure this in alchitry.acf
-    input difficulty_button[1] // // need to configure this in alchitry.acf
+    //input difficulty_button[1] // // need to configure this in alchitry.acf
     
     //output io_led [3][8],   // LEDs on IO Shield
     //output io_seg [8],      // 7-segment LEDs on IO Shield
@@ -28,12 +28,12 @@ module au_top (
   edge_detector button_detector[16](#RISE(1), #FALL(0), .clk(clk)); //detect on rising edge only 
   button_conditioner button_cond[16](.clk(clk));
 
-  edge_detector reset_button_detector[16](#RISE(1), #FALL(0), .clk(clk)); //detect on rising edge only 
-  button_conditioner reset_button_cond[16](.clk(clk));
+  edge_detector reset_button_detector[1](#RISE(1), #FALL(0), .clk(clk)); //detect on rising edge only 
+  button_conditioner reset_button_cond[1](.clk(clk));
   
-  reset_cond.in = reset_button;
-  rst = reset_cond.out;
-  alu_machine.reset_button = reset;
+  //reset_cond.in = reset_button;
+  //rst = reset_cond.out;
+  //alu_machine.reset_button = reset;
   fsm game_state(.clk(clk), .rst(rst)) = {IN_GAME, GAME_OVER};
   
   .clk(clk) {
@@ -68,7 +68,7 @@ module au_top (
     button_detector.in = button_cond.out;
 
     // make sure reset button only detects rising edges
-    reset_button_cond.in = reset_button[1];
+    reset_button_cond.in = reset_button[0];
     reset_button_detector.in = reset_button_cond.out;
 
     //initialize display
