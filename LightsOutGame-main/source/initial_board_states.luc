@@ -1,0 +1,35 @@
+module initial_board_states (
+    input clk,
+    input rst,
+    input update_state,
+    //input toggle, // button input
+    output out[16]
+) 
+{
+  const BOARD_STATES = {
+    b1011000010001110,
+    b1111100101101001,
+    b1011000100100000,
+    b0100101111101111
+  };
+  
+  dff counter[2](.clk(clk), .rst(rst));
+  
+  always 
+  {
+    out = 16b0;
+    if(update_state)
+    {
+      if(counter.q == b11)
+      {
+        out = BOARD_STATES[counter.q];
+        counter.d = b00;
+      }
+      else
+      {
+        out = BOARD_STATES[counter.q];
+        counter.d = counter.q + 1;
+      }    
+    }
+  }
+}

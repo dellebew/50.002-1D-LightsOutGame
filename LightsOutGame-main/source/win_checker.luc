@@ -1,0 +1,11 @@
+module win_checker (
+    input state[16],
+    output out
+) 
+{
+
+  always 
+  {
+    out = &state;
+  }
+}

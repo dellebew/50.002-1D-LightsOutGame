@@ -1,0 +1,38 @@
+pin clk CLOCK;
+clock clk 100MHz;
+
+pin rst_n RESET;
+
+//test io_button
+//pin io_led[2] io_led
+
+//strips
+pin led_strip[0] B49;
+pin led_strip[1] B48;
+pin led_strip[2] B3;
+pin led_strip[3] B2;
+
+//buttons
+pin button[15] C28;
+pin button[14] C31;
+pin button[13] C34;
+pin button[12] C37;
+
+pin button[11] C27;
+pin button[10] C30;
+pin button[9] C33;
+pin button[8] C36;
+
+pin button[7] C23;
+pin button[6] C20;
+pin button[5] C17;
+pin button[4] C14;
+
+pin button[3] C24;
+pin button[2] C21;
+pin button[1] C18;
+pin button[0] C15;
+
+// flip the Tx/Rx lines
+pin usb_rx USB_TX;
+pin usb_tx USB_RX;

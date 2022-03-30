@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="LightsOutGame" board="Alchitry Au" language="Lucid" version="3">
+  <files>
+    <component>pipeline.luc</component>
+    <src>alu.luc</src>
+    <component>counter.luc</component>
+    <src>display.luc</src>
+    <src>display_encoder.luc</src>
+    <src>initial_board_states.luc</src>
+    <src>state_inverter.luc</src>
+    <src>win_checker.luc</src>
+    <component>reset_conditioner.luc</component>
+    <component>edge_detector.luc</component>
+    <component>encoder.luc</component>
+    <component>button_conditioner.luc</component>
+    <src top="true">au_top.luc</src>
+    <constraint>io.acf</constraint>
+    <constraint lib="true">au.xdc</constraint>
+    <constraint>alchitry.acf</constraint>
+  </files>
+</project>

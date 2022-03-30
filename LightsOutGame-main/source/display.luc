@@ -1,0 +1,55 @@
+module display (
+    input clk,  // clock
+    input rst,  // reset
+    //input data[16][1], // (position, led_state)
+    input state[16],
+    output out[4]
+  ) {
+  
+  // enum for different led_states
+  const LED_OFF = 0;          // 0
+  const LED_0 = 1;            // 1
+  
+  // preset colours (in GRB)
+  const COLOR_RED = c{8h00, 8h80, 8h10};
+  const COLOR_BLUE = c{8h00, 8h00, 8hff};
+  
+  
+  dff board[16][1](.clk(clk), .rst(rst)); // stores the current board state like a register
+  dff counter[14](.clk(clk), .rst(rst)); // 1 complete cycle of counter corresponds to 1 row //come back to later
+  sig foo[11]; // temp variable to store (n % 1536), which yields the column to be rendered
+  sig led_state[1]; // temp variable to store state of chosen individual LED
+  sig grb[24]; // temp variable to store the GRB values for LED given its led_state
+  
+  var r, c; // for-loop counters
+
+  always {
+    out = 4b0;
+    // update board
+    for (r=0; r<4; r++) for (c=0; c<4; c++) board.d[r][c] = c{state[r*c], state[r*c]}; // refer to bit pattern for led_states
+    // render display
+    for (r=0; r<4; r++) {
+      if (counter.q < 16*24*4) { // if not within the "rest" block - there is data to be sent
+        c = counter.q/(16*24); // counter.q/(64*24) == column number - obtains led_state for given (row, col)
+        led_state = board.q[r][c];
+        case (led_state) {
+          LED_OFF: grb = COLOR_BLUE;
+          LED_0: grb = COLOR_RED;
+          default: grb = COLOR_BLUE;
+        }
+      
+        foo = counter.q - ((counter.q/(16*24))*(16*24)); // gets the current block of 1536 - 1536 clocks corresponds to (64clocks/bit * 8bits/colour * 3colours)
+        // this is equivalent to foo = counter.q % (16*24);
+        // logic 0 - 5 clocks HIGH + 11 clocks LOW
+        // logic 1 - 10 clocks HIGH + 24 clocks LOW
+        if (grb[23-(foo>>6)] == 0) { // grab the corresponding bit out of 24 (bits are retrieved left to right)
+          if (foo[5:0] < 5) out[r] = 1; // send a logic 0 by checking current clock in the cycle of the last 64 bits
+        }
+        else {
+          if (foo[5:0] < 10) out[r] = 1; // send a logic 1
+        }
+      }
+      counter.d = counter.q + 3;
+    }
+  }
+}

@@ -1,0 +1,109 @@
+module au_top (
+    input clk,              // 100MHz clock
+    input rst_n,            // reset button (active low)
+    //output led [8],         // 8 user controllable LEDs
+    input usb_rx,           // USB->Serial input
+    output usb_tx,          // USB->Serial output
+    output led_strip[4],
+    input button[16],
+    input reset_button[1]
+    //output io_led [3][8],   // LEDs on IO Shield
+    //output io_seg [8],      // 7-segment LEDs on IO Shield
+    //output io_sel [4],      // Digit select on IO Shield
+    //input io_button [5],    // 5 buttons on IO Shield
+    //input io_dip [3][8]     // DIP switches on IO Shield
+  ) {
+  
+  sig rst;                  // reset signal
+  
+  // initial_board_states gen(.clk(clk), .rst(rst));
+  initial_board_states initial_states(.clk(clk), .rst(rst));  
+  display display(.clk(clk), .rst(rst));
+  //display_encoder display_encoder(.clk(clk), .rst(rst))
+  
+  dff board_state[16](#INIT(b0011011111111111), .clk(clk), .rst(rst));
+  alu alu_machine;
+  edge_detector button_detector[16](#RISE(1), #FALL(0), .clk(clk)); //detect on rising edge only 
+  button_conditioner button_cond[16](.clk(clk));
+  
+  reset_cond.in = reset_button;
+  reset = rese
+  alu_machine.reset_button = reset;
+  fsm game_state(.clk(clk), .rst(rst)) = {IN_GAME, GAME_OVER};
+  
+  .clk(clk) {
+    // The reset conditioner is used to synchronize the reset signal to the FPGA
+    // clock. This ensures the entire FPGA comes out of reset at the same time.
+    reset_conditioner reset_cond;
+    .rst(rst) {
+        
+        //board_manager board_mgr(#ROW(ROW), #COL(COL)); replaced by initial state
+        // board_checker chkr(#ROW(ROW), #COL(COL)); to reinstantiate when checker logic is out
+      
+    }
+  }
+
+  
+  
+  always {
+
+    reset_cond.in = ~rst_n; // input raw inverted reset signal
+    rst = reset_cond.out;   // conditioned reset
+    
+    usb_tx = usb_rx;        // loop serial port
+    
+    led_strip = 8h00;             // turn LEDs off
+    //io_led = 3x{{8h00}};        // turn LEDs off    
+    
+    // io_seg = 8hff;          // turn segments off
+    // io_sel = 4hf;           // select no digits
+    
+    // button_cond.in = io_button[1];
+    button_cond.in = button[15:0];
+    button_detector.in = button_cond.out; 
+
+    //initialize display
+    initial_states.update_state = 0;
+    //initial_states.toggle = button_cond.out;
+       
+    case (game_state.q) {
+      game_state.IN_GAME:
+        //io_led[2][7] = 0; // For debugging game_state
+        if(button_detector.out)
+        {
+          //alu_machine.button_pressed[15:0] = button_detector.out;
+          //alu_machine.button_pressed[15:8] = io_dip[1][7:0];
+          alu_machine.button_pressed = button_detector.out;
+          alu_machine.state = initial_states.out;
+          board_state.d = alu_machine.out;
+          if(alu_machine.game_over)
+          {
+            game_state.d = game_state.GAME_OVER;
+          }
+        }
+        else
+        {
+          alu_machine.button_pressed = 16b0;
+          alu_machine.state = board_state.q;
+        }
+      game_state.GAME_OVER:
+        //io_led[2][7] = 1; // For debugging game_state
+        if(button_detector.out)
+        {
+          initial_states.update_state = 1;
+          board_state.d = initial_states.out;
+          game_state.d = game_state.IN_GAME; 
+        } 
+    }
+    
+    // Display current board state
+    // Convert to external LED strip output
+    // io_led[0][7:0] = board_state.q[7:0];
+    // io_led[1][7:0] = board_state.q[15:8];
+    display.state = board_state.q;
+    // display.mask = mask_mgr.out;
+    //display_encoder.state = display.out;
+    //led_strip = display_encoder.out;
+    led_strip = display.out;
+  }
+}

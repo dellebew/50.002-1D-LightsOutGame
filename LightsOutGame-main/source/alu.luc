@@ -1,0 +1,40 @@
+module alu (
+  input state[16],
+  input button_pressed[16],
+  input reset_button,
+  output out[16],
+  output game_over,
+  output led_data[4][12] 
+)
+{
+
+  state_inverter inverter_module;
+  win_checker win_checker_module; 
+  display_encoder d_encoder_module;  
+  
+  sig new_state[16];
+
+  always 
+  {
+    
+    // Invert previous state
+    inverter_module.state = state;
+    inverter_module.button_pressed = button_pressed;
+    new_state = inverter_module.out;
+    
+    // Reset button is button_pressed
+    if(reset_button)
+    {
+      new_state = 16b0;
+    }
+    
+    // Check for victory
+    win_checker_module.state = new_state;
+    game_over = win_checker_module.out;
+    // Output new_state to au_top
+    out = new_state;
+    // Output encoded representation of state to au_top
+    d_encoder_module.state = new_state;
+    led_data = d_encoder_module.out;
+	  }
+}

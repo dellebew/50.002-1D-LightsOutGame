@@ -1,0 +1,115 @@
+module state_inverter (
+    input state[16],
+    input button_pressed[16],
+    output out[16]
+) 
+{
+  
+  sig newState[16];
+  
+  always 
+  {  
+    newState = state;
+    case(button_pressed)
+    {
+      b0000000000000001:
+        newState[0] = ~newState[0];
+        newState[1] = ~newState[1];
+        newState[4] = ~newState[4];
+        out = newState;
+      b0000000000000010:
+        newState[0] = ~newState[0];
+        newState[1] = ~newState[1];
+        newState[2] = ~newState[2];
+        newState[5] = ~newState[5];
+        out = newState;
+      b0000000000000100:
+        newState[1] = ~newState[1];
+        newState[2] = ~newState[2];
+        newState[3] = ~newState[3];
+        newState[6] = ~newState[6];
+        out = newState;
+      b0000000000001000:
+        newState[2] = ~newState[2];
+        newState[3] = ~newState[3];
+        newState[7] = ~newState[7];
+        out = newState;   
+      b0000000000010000:
+        newState[0] = ~newState[0];
+        newState[4] = ~newState[4];
+        newState[5] = ~newState[5];
+        newState[8] = ~newState[8];
+        out = newState;
+      b0000000000100000:
+        newState[1] = ~newState[1];
+        newState[4] = ~newState[4];
+        newState[5] = ~newState[5];
+        newState[6] = ~newState[6];
+        newState[9] = ~newState[9];
+        out = newState;
+      b0000000001000000:
+        newState[2] = ~newState[2];
+        newState[5] = ~newState[5];
+        newState[6] = ~newState[6];
+        newState[7] = ~newState[7];
+        newState[10] = ~newState[10];
+        out = newState;
+      b0000000010000000:
+        newState[3] = ~newState[3];
+        newState[6] = ~newState[6];
+        newState[7] = ~newState[7];
+        newState[11] = ~newState[11];
+        out = newState;  
+      b0000000100000000:
+        newState[4] = ~newState[4];
+        newState[8] = ~newState[8];
+        newState[9] = ~newState[9];
+        newState[12] = ~newState[12];
+        out = newState;
+      b0000001000000000:
+        newState[5] = ~newState[5];
+        newState[8] = ~newState[8];
+        newState[9] = ~newState[9];
+        newState[10] = ~newState[10];
+        newState[13] = ~newState[13];
+        out = newState;
+      b0000010000000000:
+        newState[6] = ~newState[6];
+        newState[9] = ~newState[9];
+        newState[10] = ~newState[10];
+        newState[11] = ~newState[11];
+        newState[14] = ~newState[14];
+        out = newState;
+      b0000100000000000:
+        newState[7] = ~newState[7];
+        newState[10] = ~newState[10];
+        newState[11] = ~newState[11];
+        newState[15] = ~newState[15];
+        out = newState;   
+      b0001000000000000:
+        newState[8] = ~newState[8];
+        newState[12] = ~newState[12];
+        newState[13] = ~newState[13];
+        out = newState;
+      b0010000000000000:
+        newState[9] = ~newState[9];
+        newState[12] = ~newState[12];
+        newState[13] = ~newState[13];
+        newState[14] = ~newState[14];
+        out = newState;
+      b0100000000000000:
+        newState[10] = ~newState[10];
+        newState[13] = ~newState[13];
+        newState[14] = ~newState[14];
+        newState[15] = ~newState[15];
+        out = newState;
+      b1000000000000000:
+        newState[11] = ~newState[11];
+        newState[14] = ~newState[14];
+        newState[15] = ~newState[15];
+        out = newState;        
+      default:
+        out = state;  
+    }
+  }
+}
