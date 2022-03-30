@@ -1,7 +1,6 @@
 module alu (
   input state[16],
   input button_pressed[16],
-  input reset_button,
   output out[16],
   output game_over,
   output led_data[4][12] 
@@ -20,14 +19,7 @@ module alu (
     // Invert previous state
     inverter_module.state = state;
     inverter_module.button_pressed = button_pressed;
-    new_state = inverter_module.out;
-    
-    // Reset button is button_pressed
-    if(reset_button)
-    {
-      new_state = 16b0;
-    }
-    
+    new_state = inverter_module.out;    
     // Check for victory
     win_checker_module.state = new_state;
     game_over = win_checker_module.out;

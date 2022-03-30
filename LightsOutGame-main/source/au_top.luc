@@ -6,7 +6,9 @@ module au_top (
     output usb_tx,          // USB->Serial output
     output led_strip[4],
     input button[16],
-    input reset_button[1]
+    input reset_button[1] // need to configure this in alchitry.acf
+    input difficulty_button[1] // // need to configure this in alchitry.acf
+    
     //output io_led [3][8],   // LEDs on IO Shield
     //output io_seg [8],      // 7-segment LEDs on IO Shield
     //output io_sel [4],      // Digit select on IO Shield
@@ -25,9 +27,12 @@ module au_top (
   alu alu_machine;
   edge_detector button_detector[16](#RISE(1), #FALL(0), .clk(clk)); //detect on rising edge only 
   button_conditioner button_cond[16](.clk(clk));
+
+  edge_detector reset_button_detector[16](#RISE(1), #FALL(0), .clk(clk)); //detect on rising edge only 
+  button_conditioner reset_button_cond[16](.clk(clk));
   
   reset_cond.in = reset_button;
-  reset = rese
+  rst = reset_cond.out;
   alu_machine.reset_button = reset;
   fsm game_state(.clk(clk), .rst(rst)) = {IN_GAME, GAME_OVER};
   
@@ -60,7 +65,11 @@ module au_top (
     
     // button_cond.in = io_button[1];
     button_cond.in = button[15:0];
-    button_detector.in = button_cond.out; 
+    button_detector.in = button_cond.out;
+
+    // make sure reset button only detects rising edges
+    reset_button_cond.in = reset_button[1];
+    reset_button_detector.in = reset_button_cond.out;
 
     //initialize display
     initial_states.update_state = 0;
@@ -69,12 +78,20 @@ module au_top (
     case (game_state.q) {
       game_state.IN_GAME:
         //io_led[2][7] = 0; // For debugging game_state
+
+        // if reset button pressed, get new initial board state and update board_state with this.
+        if (reset_button_detector.out)
+        {
+          initial_states.update_state = 1;
+          board_state.d = initial_states.out;
+        }
+
         if(button_detector.out)
         {
           //alu_machine.button_pressed[15:0] = button_detector.out;
           //alu_machine.button_pressed[15:8] = io_dip[1][7:0];
           alu_machine.button_pressed = button_detector.out;
-          alu_machine.state = initial_states.out;
+          alu_machine.state = board_state.q;
           board_state.d = alu_machine.out;
           if(alu_machine.game_over)
           {
@@ -88,6 +105,14 @@ module au_top (
         }
       game_state.GAME_OVER:
         //io_led[2][7] = 1; // For debugging game_state
+
+        // if reset button pressed, get new initial board state and update board_state with this.
+        if (reset_button_detector.out)
+        {
+          initial_states.update_state = 1;
+          board_state.d = initial_states.out;
+        }
+
         if(button_detector.out)
         {
           initial_states.update_state = 1;
