@@ -33,6 +33,8 @@ pin button[2] C21;
 pin button[1] C18;
 pin button[0] C15;
 
+pin reset_button[0] C12;
+
 // flip the Tx/Rx lines
 pin usb_rx USB_TX;
 pin usb_tx USB_RX;
