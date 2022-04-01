@@ -88,7 +88,7 @@ module au_top (
         {
           //alu_machine.button_pressed[15:0] = button_detector.out;
           //alu_machine.button_pressed[15:8] = io_dip[1][7:0];
-          diff_control.update_move = 1;
+          diff_control.update_move = 1; // update number of hidden turns left for display
           alu_machine.button_pressed = button_detector.out;
           alu_machine.state = board_state.q;
           board_state.d = alu_machine.out;
