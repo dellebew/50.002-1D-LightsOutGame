@@ -22,6 +22,7 @@ module au_top (
   initial_board_states initial_states(.clk(clk), .rst(rst));  
   display display(.clk(clk), .rst(rst));
   //display_encoder display_encoder(.clk(clk), .rst(rst))
+  difficulty_level_controller diff_control(.clk(clk), .rst(rst));
   
   dff board_state[16](#INIT(b0011011111111111), .clk(clk), .rst(rst));
   alu alu_machine;
@@ -30,13 +31,10 @@ module au_top (
 
   edge_detector reset_button_detector[1](#RISE(1), #FALL(0), .clk(clk)); //detect on rising edge only 
   button_conditioner reset_button_cond[1](.clk(clk));
+
+  edge_detector difficulty_button_detector[1](#RISE(1), #FALL(0), .clk(clk)); //detect on rising edge only 
+  button_conditioner difficulty_button_cond[1](.clk(clk));
   
-<<<<<<< HEAD
-=======
-  //reset_cond.in = reset_button;
-  //rst = reset_cond.out;
-  //alu_machine.reset_button = reset;
->>>>>>> 3fe5ddbfd44878cff7fbee61942648713d50a2ac
   fsm game_state(.clk(clk), .rst(rst)) = {IN_GAME, GAME_OVER};
   
   .clk(clk) {
@@ -74,6 +72,10 @@ module au_top (
     reset_button_cond.in = reset_button[0];
     reset_button_detector.in = reset_button_cond.out;
 
+    // make sure reset button only detects rising edges
+    difficulty_button_cond.in = difficulty_button[0];
+    difficulty_button_detector.in = difficulty_button_cond.out;
+
     //initialize display
     initial_states.update_state = 0;
     //initial_states.toggle = button_cond.out;
@@ -82,17 +84,11 @@ module au_top (
       game_state.IN_GAME:
         //io_led[2][7] = 0; // For debugging game_state
 
-        // if reset button pressed, get new initial board state and update board_state with this.
-        if (reset_button_detector.out)
-        {
-          initial_states.update_state = 1;
-          board_state.d = initial_states.out;
-        }
-
         if(button_detector.out)
         {
           //alu_machine.button_pressed[15:0] = button_detector.out;
           //alu_machine.button_pressed[15:8] = io_dip[1][7:0];
+          diff_control.update_move = 1;
           alu_machine.button_pressed = button_detector.out;
           alu_machine.state = board_state.q;
           board_state.d = alu_machine.out;
@@ -106,6 +102,14 @@ module au_top (
           alu_machine.button_pressed = 16b0;
           alu_machine.state = board_state.q;
         }
+
+        // if reset button pressed, get new initial board state and update board_state with this.
+        if (reset_button_detector.out)
+        {
+          initial_states.update_state = 1;
+          board_state.d = initial_states.out;
+        }
+
       game_state.GAME_OVER:
         //io_led[2][7] = 1; // For debugging game_state
 
@@ -114,6 +118,7 @@ module au_top (
         {
           initial_states.update_state = 1;
           board_state.d = initial_states.out;
+          game_state.d = game_state.IN_GAME;
         }
 
         if(button_detector.out)
