@@ -1,55 +1,62 @@
-module display (
+module display #(
+    PIXEL_COUNT = 144 : PIXEL_COUNT > 0  		// The number of LEDs in the chain.
+  )(
     input clk,  // clock
     input rst,  // reset
-    //input data[16][1], // (position, led_state)
-    input state[16],
-    output out[4]
-  ) {
-  
-  // enum for different led_states
-  const LED_OFF = 0;          // 0
-  const LED_0 = 1;            // 1
-  
-  // preset colours (in GRB)
-  const COLOR_RED = c{8h00, 8h80, 8h10};
-  const COLOR_BLUE = c{8h00, 8h00, 8hff};
-  
-  
-  dff board[16][1](.clk(clk), .rst(rst)); // stores the current board state like a register
-  dff counter[14](.clk(clk), .rst(rst)); // 1 complete cycle of counter corresponds to 1 row //come back to later
-  sig foo[11]; // temp variable to store (n % 1536), which yields the column to be rendered
-  sig led_state[1]; // temp variable to store state of chosen individual LED
-  sig grb[24]; // temp variable to store the GRB values for LED given its led_state
-  
-  var r, c; // for-loop counters
+    input update, // feed '1' to enable this strip
+    input color[96],   			// GBR, 8 bits each, color to render for all LED 
+    output pixel[$clog2(PIXEL_COUNT)],  // Index of the LED, with the color in color[24]
+    output led		//Goes to the first LED in the chain
+    //input display_state[12]
 
+  ) {
+    
+  .clk(clk) {
+    .rst(rst) {
+      fsm state = {SEND_PIXEL, RESET};
+      dff pixel_ctr[$clog2(PIXEL_COUNT)];
+      dff bit_ctr[5];
+      dff ctr[7];
+      dff rst_ctr [$clog2(5000)]; //reset requires 50us of zeroes 
+    }
+  }
+  
   always {
-    out = 4b0;
-    // update board
-    for (r=0; r<4; r++) for (c=0; c<4; c++) board.d[r][c] = c{state[r*c], state[r*c]}; // refer to bit pattern for led_states
-    // render display
-    for (r=0; r<4; r++) {
-      if (counter.q < 16*24*4) { // if not within the "rest" block - there is data to be sent
-        c = counter.q/(16*24); // counter.q/(64*24) == column number - obtains led_state for given (row, col)
-        led_state = board.q[r][c];
-        case (led_state) {
-          LED_OFF: grb = COLOR_BLUE;
-          LED_0: grb = COLOR_RED;
-          default: grb = COLOR_BLUE;
+    led = 0;
+    
+    pixel = pixel_ctr.q;
+    case (state.q) {
+      state.SEND_PIXEL:
+        if (color[bit_ctr.q]) //if current bit is HIGH, send 80 1's and 45 0's
+          led = ctr.q < 80;
+        else //if current bit is LOW, send 40 1's, and 85 0's
+          led = ctr.q < 40;
+        
+        ctr.d = ctr.q + 1;
+        if (ctr.q == 125){ //check if you can send next bit 
+          ctr.d = 0;
+          
+          bit_ctr.d = bit_ctr.q + 1;
+          if (bit_ctr.q == 23) { //check if you have sent all 24 bits 
+            bit_ctr.d = 0;
+            pixel_ctr.d = pixel_ctr.q + 1;
+              
+            if (pixel_ctr.q == PIXEL_COUNT-1) { //check if you have sent data to all LEDs
+              pixel_ctr.d = 0;
+              state.d = state.RESET;
+            }
+          }
         }
       
-        foo = counter.q - ((counter.q/(16*24))*(16*24)); // gets the current block of 1536 - 1536 clocks corresponds to (64clocks/bit * 8bits/colour * 3colours)
-        // this is equivalent to foo = counter.q % (16*24);
-        // logic 0 - 5 clocks HIGH + 11 clocks LOW
-        // logic 1 - 10 clocks HIGH + 24 clocks LOW
-        if (grb[23-(foo>>6)] == 0) { // grab the corresponding bit out of 24 (bits are retrieved left to right)
-          if (foo[5:0] < 5) out[r] = 1; // send a logic 0 by checking current clock in the cycle of the last 64 bits
+      state.RESET:
+        if (&rst_ctr.q) { // if contents of rst_ctr.q is all 1
+          if (update) {
+            rst_ctr.d = 0;
+            state.d = state.SEND_PIXEL; //send again
+          }
+        } else {
+          rst_ctr.d = rst_ctr.q + 1;
         }
-        else {
-          if (foo[5:0] < 10) out[r] = 1; // send a logic 1
-        }
-      }
-      counter.d = counter.q + 3;
     }
   }
 }

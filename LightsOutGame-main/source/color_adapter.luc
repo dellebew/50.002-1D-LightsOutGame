@@ -1,0 +1,31 @@
+module color_adapter (
+    input clk,              // 100MHz clock
+    input rst,            // reset button (active low)
+    input state[12],
+    output out[12][24]
+  ) {
+ 
+  //fsm state = {BLUE, RED};
+  //var i;
+  var i;
+  const EMPTY = {h00FF00,h00FF00,h00FF00,h00FF00,h00FF00,h00FF00,h00FF00,h00FF00,h00FF00,h00FF00,h00FF00,h00FF00};
+  //dff state_file[12](.clk(clk), .rst(rst));
+  dff led_out[12][24](.clk(clk), .rst(rst), #INIT(EMPTY));
+  
+  always {
+    
+    
+    //out = board;
+    
+    //state_file.d = state;
+    for (i=0; i<12; i++) {
+
+    //if (state_file.q[i] == 2d0)
+    if (state[i] == 2d0)
+        led_out.d[i] = hFF0000;
+    else
+        led_out.d[i] = h00FF00;
+    
+    out[i] = led_out.q[i];
+    }
+}

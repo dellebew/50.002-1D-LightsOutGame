@@ -1,0 +1,62 @@
+module led_out (
+    input clk,  // clock
+    input rst,  // reset
+    input board_state[16],
+    output out0,
+    output out1,
+    output out2,
+    output out3
+  ) {
+  
+  display_encoder display_encoder;
+  
+  //test
+  //const LEDCOLOR = {hFF0000, h00FF00, h0000FF, hFF0000, h00FF00, h0000FF, hFF0000, h00FF00, h00FF00, h0000FF, hFF0000, h00FF00};
+  
+  color_adapter color_adapter0(.clk(clk), .rst(rst));
+  color_adapter color_adapter1(.clk(clk), .rst(rst));
+  color_adapter color_adapter2(.clk(clk), .rst(rst));
+  color_adapter color_adapter3(.clk(clk), .rst(rst));
+  
+  sig ledcolor0[12][24];
+  sig ledcolor1[12][24];
+  sig ledcolor2[12][24];
+  sig ledcolor3[12][24];
+    
+  display display0(#PIXEL_COUNT(12), .clk(clk), .rst(rst)); //set for 12 pixels
+  display display1(#PIXEL_COUNT(12), .clk(clk), .rst(rst)); //set for 12 pixels
+  display display2(#PIXEL_COUNT(12), .clk(clk), .rst(rst)); //set for 12 pixels
+  display display3(#PIXEL_COUNT(12), .clk(clk), .rst(rst)); //set for 12 pixels
+  
+  always {    
+    ledcolor0 = color_adapter0.out;
+    ledcolor1 = color_adapter1.out;
+    ledcolor2 = color_adapter2.out;
+    ledcolor3 = color_adapter3.out;
+
+    color_adapter0.state = display_encoder.strip0;
+    color_adapter1.state = display_encoder.strip1;
+    color_adapter2.state = display_encoder.strip2;
+    color_adapter3.state = display_encoder.strip3;
+    
+    display_encoder.state = board_state;
+    
+    display0.update = 1; //sample write 
+    display0.color = ledcolor0[display0.pixel];
+    
+    display1.update = 1; //sample write 
+    display1.color = ledcolor1[display1.pixel];
+    
+    display2.update = 1; //sample write 
+    display2.color = ledcolor2[display2.pixel];
+    
+    display3.update = 1; //sample write 
+    display3.color = ledcolor3[display3.pixel];
+    
+    out0 = display0.led;
+    out1 = display1.led;
+    out2 = display2.led;
+    out3 = display3.led;
+    
+  }
+}

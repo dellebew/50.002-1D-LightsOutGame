@@ -1,26 +1,29 @@
 module display_encoder (
     input state[16],
-    output out[4][12]
+    output strip0[12],
+    output strip1[12],
+    output strip2[12],
+    output strip3[12]
 ) 
 {
 
   always 
   {
-    out[0][2:0] = 3x{state[0]};
-    out[0][5:3] = 3x{state[1]};
-    out[0][8:6] = 3x{state[2]};
-    out[0][11:9] = 3x{state[3]};
-    out[1][2:0] = 3x{state[4]};
-    out[1][5:3] = 3x{state[5]};
-    out[1][8:6] = 3x{state[6]};
-    out[1][11:9] = 3x{state[7]};
-    out[2][2:0] = 3x{state[8]};
-    out[2][5:3] = 3x{state[9]};
-    out[2][8:6] = 3x{state[10]};
-    out[2][11:9] = 3x{state[11]};
-    out[3][2:0] = 3x{state[12]};
-    out[3][5:3] = 3x{state[13]};
-    out[3][8:6] = 3x{state[14]};
-    out[3][11:9] = 3x{state[15]};
+    strip0[2:0] = 3x{state[0]};
+    strip0[5:3] = 3x{state[1]};
+    strip0[8:6] = 3x{state[2]};
+    strip0[11:9] = 3x{state[3]};
+    strip1[2:0] = 3x{state[4]};
+    strip1[5:3] = 3x{state[5]};
+    strip1[8:6] = 3x{state[6]};
+    strip1[11:9] = 3x{state[7]};
+    strip2[2:0] = 3x{state[8]};
+    strip2[5:3] = 3x{state[9]};
+    strip2[8:6] = 3x{state[10]};
+    strip2[11:9] = 3x{state[11]};
+    strip3[2:0] = 3x{state[12]};
+    strip3[5:3] = 3x{state[13]};
+    strip3[8:6] = 3x{state[14]};
+    strip3[11:9] = 3x{state[15]};
   }
 }

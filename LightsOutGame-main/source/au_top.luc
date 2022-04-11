@@ -20,7 +20,7 @@ module au_top (
   
   // initial_board_states gen(.clk(clk), .rst(rst));
   initial_board_states initial_states(.clk(clk), .rst(rst));  
-  display display(.clk(clk), .rst(rst));
+  led_out led_out (.clk(clk), .rst(rst));
   //display_encoder display_encoder(.clk(clk), .rst(rst))
   difficulty_level_controller diff_control(.clk(clk), .rst(rst));
   
@@ -58,7 +58,7 @@ module au_top (
     
     usb_tx = usb_rx;        // loop serial port
     
-    led_strip = 8h00;             // turn LEDs off
+    //led_strip = 8h00;             // turn LEDs off
     //io_led = 3x{{8h00}};        // turn LEDs off    
     
     // io_seg = 8hff;          // turn segments off
@@ -139,16 +139,29 @@ module au_top (
            diff_control.update_difficulty = 0;
            diff_control.update_move = 0;
         }
+
+        if(button_detector.out)
+        {
+          initial_states.update_state = 1;
+          board_state.d = initial_states.out;
+          game_state.d = game_state.IN_GAME; 
+        } 
     }
     
     // Display current board state
     // Convert to external LED strip output
     // io_led[0][7:0] = board_state.q[7:0];
     // io_led[1][7:0] = board_state.q[15:8];
-    display.state = board_state.q;
+    //display.state = board_state.q;
     // display.mask = mask_mgr.out;
     //display_encoder.state = display.out;
     //led_strip = display_encoder.out;
-    led_strip = display.out;
+    
+    led_out.board_state = board_state.q;
+    
+    led_strip[0] = led_out.out0;
+    led_strip[1] = led_out.out1;
+    led_strip[2] = led_out.out2;
+    led_strip[3] = led_out.out3;
   }
 }
