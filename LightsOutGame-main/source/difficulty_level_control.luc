@@ -7,7 +7,7 @@ module difficulty_level_controller (
     output hidden_turns[2],
     output difficulty[2];
 ) 
-  
+{
   dff difficulty_level[2](#INIT(0), .clk(clk), .rst(rst));
   dff turns_hidden_left[2](#INIT(0), .clk(clk), .rst(rst)); // number of turns hidden corresponds to difficulty level: 0, 1, 2
   
