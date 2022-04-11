@@ -101,6 +101,8 @@ module au_top (
         {
           alu_machine.button_pressed = 16b0;
           alu_machine.state = board_state.q;
+          diff_control.update_difficulty = 0;
+          diff_control.update_move
         }
 
         // if reset button pressed, get new initial board state and update board_state with this.
@@ -109,7 +111,13 @@ module au_top (
           initial_states.update_state = 1;
           board_state.d = initial_states.out;
         }
-
+        
+        if (difficulty_button_detector.out)
+        {
+           diff_control.update_difficulty = 1;
+          diff_control.update_move = 0;
+        }
+        
       game_state.GAME_OVER:
         //io_led[2][7] = 1; // For debugging game_state
 
@@ -120,13 +128,17 @@ module au_top (
           board_state.d = initial_states.out;
           game_state.d = game_state.IN_GAME;
         }
-
-        if(button_detector.out)
+        
+        if (difficulty_button_detector.out)
         {
-          initial_states.update_state = 1;
-          board_state.d = initial_states.out;
-          game_state.d = game_state.IN_GAME; 
-        } 
+           diff_control.update_difficulty = 1;
+        }
+        
+        else
+        {
+           diff_control.update_difficulty = 0;
+           diff_control.update_move = 0;
+        }
     }
     
     // Display current board state

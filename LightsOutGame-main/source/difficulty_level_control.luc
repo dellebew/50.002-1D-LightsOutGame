@@ -5,7 +5,7 @@ module difficulty_level_controller (
     input update_move,
     // reset button
     output hidden_turns[2],
-    output difficulty[2];
+    output difficulty[2]
 ) 
 {
   dff difficulty_level[2](#INIT(0), .clk(clk), .rst(rst));
